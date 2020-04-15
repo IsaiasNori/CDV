@@ -1,4 +1,6 @@
 <?php
+include_once(dirname(__DIR__) . '/config/config.php');
+include_once(DAO_PATH . '/xfueldao.php');
 include_once('register-controller.php');
 
 class XfuelController extends RegisterController
@@ -13,27 +15,48 @@ class XfuelController extends RegisterController
     {
         try {
 
-            if ($this->checkFieldToInsert()) {
+            if ($this->params) {
+                if ($this->params['type'] === 'xfuel') {
+                    if ($this->params['xfuel_value'] === "") {
+                        die('Para tipo: Xfuel é necessário informar o valor!');
+                    }
 
-                $xfuel = new XFuelModel($this->params);
+                    $this->params['xfuel_value'] = intval($this->params['xfuel_value']);
+                    $this->params['region'] = $this->params['region'] !== "" ? $this->params['region'] : false;
+                    $this->params['local'] = $this->params['local'] !== "" ? $this->params['local'] : false;
+                    $this->params['reason'] = $this->params['reason'] !== "" ? $this->params['reason'] : false;
+                } else if ($this->params['type'] === 'alert') {
+                    $this->params['region'] = $this->params['region'] !== "" ? $this->params['region'] : false;
+                    $this->params['local'] = $this->params['local'] !== "" ? $this->params['local'] : 'alert';
+                    $this->params['reason'] = $this->params['reason'] !== "" ? $this->params['reason'] : 'info';
+                } else {
+                    die('Tipo de informação inválida!');
+                }
+
+                $this->params['date_start'] = $this->params['date_start'] !== "" ? new DateTime($this->params['date_start']) : false;
+                $this->params['date_end'] = $this->params['date_end'] !== "" ? new DateTime($this->params['date_end']) : false;
+                $this->params['remark'] = $this->params['remark'] !== "" ? $this->params['remark'] : "nil";
+                // $this->params['user_create'] = $this->params['user_create'] !== "" ? $this->params['user_create'] : false;
+                // $this->params['user_change'] = $this->params['user_change'] !== "" ? $this->params['user_change'] : false;
+                $this->params['user_create'] = $this->params['user_create'] !== "" ? $this->params['user_create'] : "Teste";
+                $this->params['user_change'] = $this->params['user_change'] !== "" ? $this->params['user_change'] : "Teste";
+
+                $this->params['date_start'] = $this->params['date_start']->format('Y-m-d h:i');
+                $this->params['date_end'] = $this->params['date_end']->format('Y-m-d h:i');
 
 
-
-                $fields = "XFUEL_VALUE, TYPE, REGION, LOCATION, REASON, DATE_START, PLANNED_END, REMARK, CREATE_USER, CHANGE_USER";
-
-                $left = "$xFuel,'$type','$region','$local','$reason',";
-
-                $right  = "'$start','$end','$rmk','eu','eu'";
-
-                $values = $left . $right;
-
-                $sql = "INSERT INTO XFUEL ($fields) VALUES ($values);";
-
-                $result = $this->dao->exec('insert', $sql);
-                return $result;
+                if ($this->checkFields()) {
+                    $xfuel = new XFuelModel($this->params);
+                    $result = $this->dao->insert($xfuel);
+                    return ["id" => $result];
+                } else {
+                    die("O campo {$this->checkFields()} é obrigatório!");
+                }
+            } else {
+                die("Dados Inválidos!");
             }
         } catch (Throwable $e) {
-            throw new ErrorException('Create' . $e);
+            throw new ErrorException('Controller-Create' . $e);
         }
     }
 
@@ -78,15 +101,16 @@ class XfuelController extends RegisterController
         return 'update';
     }
 
-    protected function checkFieldToInsert()
+    protected function checkFields()
     {
-
         for ($i = 3; $i < 14; $i++) {
-            if (
-                !isset($this->params[$this->dao->getColumns()[$i]]) ||
-                $this->params[$this->dao->getColumns()[$i]] === ""
-            ) {
-                return $this->dao->getColumns()[$i];
+            if ($i !== 10) {
+                if (
+                    !isset($this->params[$this->dao->getColumns()[$i]]) ||
+                    (!$this->params[$this->dao->getColumns()[$i]])
+                ) {
+                    return $this->dao->getColumns()[$i];
+                }
             }
         }
         return true;

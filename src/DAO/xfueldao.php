@@ -7,7 +7,9 @@ class XfuelDAO extends DAO
 {
     function __construct()
     {
+        parent::__construct();
         $this->table = "XFUEL";
+
         $this->columns = [
             "id",
             "record_date",
@@ -28,10 +30,35 @@ class XfuelDAO extends DAO
 
     function insert($model)
     {
-        return $this->insert($model);
+        try {
+            $fields = "xfuel_value,type,region,local,reason,date_start,date_end,remark,user_create,user_change";
+            $values = ":xfuel_value,:type,:region,:local,:reason,:date_start,:date_end,:remark,:user_create,:user_change";
+
+            $sql = "INSERT INTO $this->table ($fields) VALUES ($values)";
+
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->bindValue(':xfuel_value', $model->xfuel_value, PDO::PARAM_INT);
+            $stmt->bindValue(':type', $model->type, PDO::PARAM_STR);
+            $stmt->bindValue(':region', $model->region, PDO::PARAM_STR);
+            $stmt->bindValue(':local', $model->local, PDO::PARAM_STR);
+            $stmt->bindValue(':reason', $model->reason, PDO::PARAM_STR);
+            $stmt->bindValue(':date_start', $model->date_start);
+            $stmt->bindValue(':date_end', $model->date_end);
+            $stmt->bindValue(':remark', $model->remark, PDO::PARAM_STR);
+            $stmt->bindValue(':user_create', $model->user_create, PDO::PARAM_STR);
+            $stmt->bindValue(':user_change', $model->user_change, PDO::PARAM_STR);
+
+            $stmt->execute();
+
+            $results = $this->db->lastInsertId();
+            return $results;
+        } catch (PDOException $e) {
+            die("Insert: " . $e);
+        }
     }
 
-    function getList($start, $end, $closed = false){
+    function getList($start, $end, $closed = false)
     {
         try {
             // codar...
@@ -40,7 +67,7 @@ class XfuelDAO extends DAO
             throw new ErrorException($e);
         }
     }
-    
+
     function getOne($id)
     {
         try {
@@ -49,7 +76,7 @@ class XfuelDAO extends DAO
             throw new ErrorException($e);
         }
     }
-    
+
     function update($model)
     {
         try {
@@ -58,7 +85,7 @@ class XfuelDAO extends DAO
             throw new ErrorException($e);
         }
     }
-    
+
     function delete($id)
     {
         try {
@@ -67,9 +94,9 @@ class XfuelDAO extends DAO
             throw new ErrorException($e);
         }
     }
-    
+
     function getColumns()
     {
-        return $this->getColumns();
+        return $this->columns;
     }
 }

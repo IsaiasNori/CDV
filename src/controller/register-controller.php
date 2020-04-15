@@ -1,5 +1,10 @@
 <?php
-include_once(dirname(__DIR__, 1) . '..\model\interfaces.php');
+include_once(dirname(__DIR__) . '/config/config.php');
+
+include_once(MODEL_PATH . '/interfaces.php');
+include_once(MODEL_PATH . '/model.php');
+// include_once(VIEW_PATH . '/view.php');
+
 
 abstract class RegisterController implements IRegister
 {
@@ -22,5 +27,5 @@ abstract class RegisterController implements IRegister
         }
     }
 
-    protected function checkFieldToInsert();
+    protected abstract function checkFields();
 }
