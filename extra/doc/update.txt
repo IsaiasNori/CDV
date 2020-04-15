@@ -1,0 +1,7 @@
+ultima modificação funcionando: 11/3/20 - 18h
+
+setar caminhos de arquivos
+
+php - '../' = dir root
+
+html, css, javascript - '/' = dir root
